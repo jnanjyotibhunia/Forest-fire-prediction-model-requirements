@@ -1,0 +1,379 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e0e;--surf:#151717;--surf2:#1c1f1f;--bdr:#252828;
+  --txt:#e2ddd6;--muted:#5e5c58;--acc:#e8593c;
+  --low:#27ae60;--med:#e67e22;--high:#e74c3c;--ext:#8e44ad;
+  --font:system-ui,sans-serif;--mono:'Courier New',monospace;
+}
+body{background:transparent;color:var(--txt);font-family:var(--font)}
+.wrap{background:var(--bg);border-radius:14px;padding:28px 26px 36px}
+.hdr{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--bdr)}
+.hdr h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.hdr h1 em{color:var(--acc);font-style:normal}
+.hdr p{margin-top:6px;color:var(--muted);font-size:12px;font-family:var(--mono)}
+.api-bar{display:flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid var(--bdr);border-radius:7px;font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:20px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--low);flex-shrink:0}
+.group{margin-bottom:18px}
+.group-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px 8px 0 0;cursor:pointer;user-select:none}
+.group-hdr span{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);flex:1}
+.group-hdr .badge{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--bdr);color:var(--muted)}
+.group-hdr .badge.req{background:rgba(232,89,60,.15);color:var(--acc)}
+.group-hdr .arrow{font-size:13px;color:var(--muted);transition:transform .2s}
+.group-hdr.open .arrow{transform:rotate(180deg)}
+.group-body{background:var(--surf);border:1px solid var(--bdr);border-top:none;border-radius:0 0 8px 8px;padding:16px;display:none}
+.group-body.open{display:block}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{display:block;font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.field label em{color:var(--acc);font-style:normal}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;color:var(--txt);font-family:var(--mono);font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--acc)}
+.field select option{background:var(--surf)}
+.field .hint{margin-top:4px;font-size:10px;color:var(--muted);font-family:var(--mono)}
+.presets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.pb{padding:6px 13px;background:transparent;border:1px solid var(--bdr);border-radius:6px;color:var(--muted);font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.pb:hover{border-color:var(--acc);color:var(--acc)}
+.btn{width:100%;padding:14px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;font-family:var(--font);letter-spacing:.01em}
+.btn:hover:not(:disabled){opacity:.87}
+.btn:active:not(:disabled){transform:scale(.99)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .65s linear infinite;margin-right:7px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.result{margin-top:22px;animation:fu .3s ease}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.rbanner{border-radius:9px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rbanner.LOW{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.28)}
+.rbanner.MEDIUM{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.28)}
+.rbanner.HIGH{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.28)}
+.rbanner.EXTREME{background:rgba(142,68,173,.12);border:1px solid rgba(142,68,173,.35)}
+.rlbl{font-size:25px;font-weight:700;letter-spacing:-.3px}
+.rlbl.LOW{color:var(--low)}.rlbl.MEDIUM{color:var(--med)}
+.rlbl.HIGH{color:var(--high)}.rlbl.EXTREME{color:var(--ext)}
+.rsub{font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:5px}
+.rpct{font-family:var(--mono);font-size:36px;font-weight:500}
+.rpct sup{font-size:14px;color:var(--muted)}
+.btrack{height:6px;background:var(--bdr);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.bfill{height:100%;border-radius:99px;transition:width .75s cubic-bezier(.4,0,.2,1)}
+.bfill.LOW{background:var(--low)}.bfill.MEDIUM{background:var(--med)}
+.bfill.HIGH{background:var(--high)}.bfill.EXTREME{background:var(--ext)}
+.blbls{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.sbox{background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;padding:11px;text-align:center}
+.sv{font-family:var(--mono);font-size:16px;font-weight:500}
+.sn{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+hr.d{border:none;border-top:1px solid var(--bdr);margin:14px 0}
+.flbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.fr{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.fn{font-family:var(--mono);font-size:11px;color:var(--muted);width:155px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft{flex:1;height:5px;background:var(--bdr);border-radius:99px;overflow:hidden}
+.ff{height:100%;background:var(--acc);border-radius:99px;transition:width .5s ease}
+.fv{font-family:var(--mono);font-size:10px;color:var(--muted);width:38px;text-align:right}
+.expl{margin-top:14px;padding:13px 15px;background:var(--surf2);border:1px solid var(--bdr);border-left:3px solid var(--acc);border-radius:0 7px 7px 0;font-size:12px;color:var(--muted);line-height:1.75;font-family:var(--mono)}
+.expl p{margin-bottom:2px}
+.sum{margin-top:12px;font-size:11px;font-family:var(--mono);color:var(--muted);line-height:1.6;padding:10px 14px;background:var(--surf2);border-radius:6px;border:1px solid var(--bdr)}
+.errbox{margin-top:12px;padding:12px 15px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);border-radius:8px;font-size:12px;color:var(--high);font-family:var(--mono)}
+</style>
+
+<div class="wrap">
+  <h2 class="sr-only">Forest fire risk predictor with full weather, terrain, vegetation and FWI inputs</h2>
+  <div class="hdr">
+    <h1>Forest Fire <em>Risk</em> Predictor</h1>
+    <p>Full model — weather · terrain · vegetation · FWI indices</p>
+  </div>
+
+  <div class="api-bar">
+    <span class="dot"></span>
+    Demo mode — simulated XGBoost model &nbsp;·&nbsp; connect to FastAPI on port 8000 for live predictions
+  </div>
+
+  <div class="presets">
+    <button class="pb" onclick="fill('extreme')">Extreme wildfire</button>
+    <button class="pb" onclick="fill('high')">High risk</button>
+    <button class="pb" onclick="fill('medium')">Medium risk</button>
+    <button class="pb" onclick="fill('low')">Low / safe</button>
+    <button class="pb" onclick="fill('post_rain')">Post-rainfall</button>
+    <button class="pb" onclick="clearAll()">Clear all</button>
+  </div>
+
+  <div id="g1" class="group">
+    <div class="group-hdr open" onclick="toggle('g1')">
+      <span>Weather conditions</span>
+      <span class="badge req">Required</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="group-body open">
+      <div class="fg">
+        <div class="field"><label>Temperature (°C)<em> *</em></label><input id="temp" type="number" step="0.1" placeholder="e.g. 34"><div class="hint">Air temp at 2m height</div></div>
+        <div class="field"><label>Relative humidity (%)<em> *</em></label><input id="rh" type="number" step="1" min="0" max="100" placeholder="e.g. 20"><div class="hint">0 = bone dry, 100 = saturated</div></div>
+        <div class="field"><label>Wind speed (km/h)<em> *</em></label><input id="wind" type="number" step="0.1" min="0" placeholder="e.g. 12"><div class="hint">Sustained wind at 10m</div></div>
+        <div class="field"><label>Wind direction (°)</label><input id="wind_deg" type="number" step="1" min="0" max="360" placeholder="e.g. 180"><div class="hint">0=N, 90=E, 180=S, 270=W</div></div>
+        <div class="field"><label>Rainfall (mm)</label><input id="rain" type="number" step="0.1" min="0" placeholder="0" value="0"><div class="hint">Last 24 hours</div></div>
+        <div class="field"><label>Dewpoint (°C)</label><input id="dewpoint" type="number" step="0.1" placeholder="e.g. 5"><div class="hint">Lower = drier air</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="g2" class="group">
+    <div class="group-hdr open" onclick="toggle('g2')">
+      <span>FWI — Fire Weather Index components</span>
+      <span class="badge">Recommended</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="group-body open">
+      <div class="fg">
+        <div class="field"><label>FFMC (0–101)</label><input id="ffmc" type="number" step="0.1" min="0" max="101" placeholder="e.g. 90"><div class="hint">Fine Fuel Moisture Code — surface litter dryness</div></div>
+        <div class="field"><label>DMC (0–999)</label><input id="dmc" type="number" step="0.1" min="0" placeholder="e.g. 60"><div class="hint">Duff Moisture Code — upper soil dryness</div></div>
+        <div class="field"><label>DC (0–1000)</label><input id="dc" type="number" step="0.1" min="0" placeholder="e.g. 300"><div class="hint">Drought Code — deep soil moisture</div></div>
+        <div class="field"><label>ISI (0–999)</label><input id="isi" type="number" step="0.1" min="0" placeholder="e.g. 8"><div class="hint">Initial Spread Index — fire spread rate</div></div>
+        <div class="field"><label>BUI (0–999)</label><input id="bui" type="number" step="0.1" min="0" placeholder="e.g. 60"><div class="hint">Build-Up Index — total fuel available</div></div>
+        <div class="field"><label>FWI (0–999)</label><input id="fwi" type="number" step="0.1" min="0" placeholder="e.g. 15"><div class="hint">Fire Weather Index — overall danger</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="g3" class="group">
+    <div class="group-hdr" onclick="toggle('g3')">
+      <span>Vegetation &amp; land</span>
+      <span class="badge">Optional</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="group-body">
+      <div class="fg">
+        <div class="field"><label>NDVI (-1 to 1)</label><input id="ndvi" type="number" step="0.01" min="-1" max="1" placeholder="e.g. 0.3"><div class="hint">Vegetation greenness — lower = drier</div></div>
+        <div class="field"><label>Land cover type</label>
+          <select id="landcover">
+            <option value="">— select —</option>
+            <option value="0">Cropland</option>
+            <option value="1">Forest / dense trees</option>
+            <option value="2">Shrubland / grassland</option>
+            <option value="3">Savanna</option>
+            <option value="4">Mixed forest</option>
+          </select><div class="hint">Dominant vegetation type</div>
+        </div>
+        <div class="field"><label>Drought index (0–5)</label><input id="drought" type="number" step="0.1" min="0" max="5" placeholder="e.g. 2"><div class="hint">0=no drought, 5=exceptional</div></div>
+        <div class="field"><label>Days since last rain</label><input id="dry_days" type="number" step="1" min="0" placeholder="e.g. 14"><div class="hint">Consecutive dry days</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="g4" class="group">
+    <div class="group-hdr" onclick="toggle('g4')">
+      <span>Terrain</span>
+      <span class="badge">Optional</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="group-body">
+      <div class="fg">
+        <div class="field"><label>Slope (°)</label><input id="slope" type="number" step="0.1" min="0" max="90" placeholder="e.g. 15"><div class="hint">Steeper = faster fire spread</div></div>
+        <div class="field"><label>Aspect (°)</label><input id="aspect" type="number" step="1" min="0" max="360" placeholder="e.g. 180"><div class="hint">180°=south-facing = drier</div></div>
+        <div class="field"><label>Elevation (m)</label><input id="elevation" type="number" step="1" placeholder="e.g. 400"><div class="hint">Above sea level</div></div>
+        <div class="field"><label>Curvature</label><input id="curvature" type="number" step="0.01" placeholder="e.g. 0.5"><div class="hint">Terrain convexity (-1 to 1)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="g5" class="group">
+    <div class="group-hdr" onclick="toggle('g5')">
+      <span>Date &amp; time context</span>
+      <span class="badge">Optional</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="group-body">
+      <div class="fg">
+        <div class="field"><label>Month (1–12)</label><input id="month" type="number" step="1" min="1" max="12" placeholder="e.g. 8"><div class="hint">Current month</div></div>
+        <div class="field"><label>Hour (0–23)</label><input id="hour" type="number" step="1" min="0" max="23" placeholder="e.g. 14"><div class="hint">Local hour — peak at 13–16h</div></div>
+        <div class="field"><label>Day of year (1–365)</label><input id="doy" type="number" step="1" min="1" max="365" placeholder="e.g. 220"><div class="hint">Used for seasonal weighting</div></div>
+        <div class="field"><label>Weekend?</label>
+          <select id="weekend">
+            <option value="">— select —</option>
+            <option value="0">Weekday</option>
+            <option value="1">Weekend</option>
+          </select><div class="hint">Human activity proxy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" id="pbtn" onclick="predict()">Predict fire risk →</button>
+  <div id="errbox" class="errbox" style="display:none"></div>
+  <div id="rbox" class="result" style="display:none"></div>
+</div>
+
+<script>
+const P={
+  extreme:{temp:42,rh:8,wind:22,wind_deg:220,rain:0,dewpoint:-5,ffmc:96,dmc:150,dc:700,isi:18,bui:180,fwi:55,ndvi:0.1,landcover:2,drought:4,dry_days:30,slope:25,aspect:200,elevation:600,month:8,hour:14,doy:225},
+  high:   {temp:36,rh:18,wind:13,wind_deg:200,rain:0,dewpoint:2,ffmc:91,dmc:90,dc:450,isi:10,bui:110,fwi:30,ndvi:0.2,landcover:1,drought:3,dry_days:18,slope:15,aspect:180,elevation:400,month:7,hour:13,doy:195},
+  medium: {temp:27,rh:40,wind:7,wind_deg:160,rain:0,dewpoint:12,ffmc:78,dmc:50,dc:250,isi:5,bui:60,fwi:12,ndvi:0.4,landcover:4,drought:2,dry_days:8,slope:8,aspect:150,elevation:300,month:5,hour:12,doy:140},
+  low:    {temp:15,rh:78,wind:3,wind_deg:90,rain:4,dewpoint:10,ffmc:58,dmc:20,dc:100,isi:2,bui:25,fwi:4,ndvi:0.7,landcover:0,drought:0,dry_days:2,slope:3,aspect:90,elevation:200,month:2,hour:10,doy:45},
+  post_rain:{temp:22,rh:72,wind:5,wind_deg:100,rain:18,dewpoint:15,ffmc:55,dmc:18,dc:90,isi:1,bui:20,fwi:2,ndvi:0.65,landcover:1,drought:0,dry_days:0,slope:10,aspect:120,elevation:350,month:4,hour:11,doy:110},
+};
+
+const FIELDS=['temp','rh','wind','wind_deg','rain','dewpoint','ffmc','dmc','dc','isi','bui','fwi','ndvi','landcover','drought','dry_days','slope','aspect','elevation','curvature','month','hour','doy','weekend'];
+
+function g(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function s(id){return document.getElementById(id)?.value||'';}
+
+function fill(k){
+  const p=P[k];
+  Object.keys(p).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value=p[id];
+  });
+}
+function clearAll(){FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';})}
+
+function toggle(id){
+  const hdr=document.querySelector(`#${id} .group-hdr`);
+  const body=document.querySelector(`#${id} .group-body`);
+  hdr.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+function model(inputs){
+  const {temp,rh,wind,rain,ffmc,dmc,dc,isi,bui,fwi,ndvi,drought,dry_days,slope,aspect,elevation,month,hour}=inputs;
+
+  const n=(v,lo,hi)=>Math.max(0,Math.min(1,(v-lo)/(hi-lo)));
+
+  const w_ffmc   = n(ffmc||75, 40,101)*0.20;
+  const w_isi    = n(isi||5,   0, 30) *0.14;
+  const w_fwi    = n(fwi||10,  0, 60) *0.12;
+  const w_bui    = n(bui||40,  0,200) *0.08;
+  const w_dmc    = n(dmc||40,  0,200) *0.06;
+  const w_dc     = n(dc||200,  0,900) *0.05;
+  const w_temp   = n(temp,    -5, 50) *0.12;
+  const w_hum    = n(100-rh,   0,100) *0.10;
+  const w_wind   = n(wind,     0, 40) *0.07;
+  const w_ndvi   = ndvi?n(1-ndvi,-1,2)*0.04:0;
+  const w_drought= n(drought||0,0,5)  *0.04;
+  const w_dry    = n(dry_days||0,0,45)*0.03;
+  const w_slope  = n(slope||0, 0,45)  *0.03;
+  const w_season = (month>=6&&month<=9)?0.04:(month>=4&&month<=10)?0.02:0;
+  const w_hour   = (hour>=12&&hour<=17)?0.03:(hour>=10&&hour<=19)?0.01:0;
+
+  let score = w_ffmc+w_isi+w_fwi+w_bui+w_dmc+w_dc+w_temp+w_hum+w_wind+w_ndvi+w_drought+w_dry+w_slope+w_season+w_hour;
+  score *= rain===0?1.0:Math.max(0.15,1-rain*0.05);
+  score  = Math.max(0.02,Math.min(0.97,score+(Math.random()-.5)*0.025));
+
+  const south_facing=(aspect>=135&&aspect<=225);
+  if(south_facing&&slope>10) score=Math.min(0.97,score*1.05);
+
+  const factors=[
+    {feature:'FFMC index',      imp:w_ffmc},
+    {feature:'ISI spread index',imp:w_isi},
+    {feature:'FWI danger index',imp:w_fwi},
+    {feature:'Temperature',     imp:w_temp},
+    {feature:'Humidity deficit',imp:w_hum},
+    {feature:'BUI fuel index',  imp:w_bui},
+    {feature:'Wind speed',      imp:w_wind},
+    {feature:'DC drought code', imp:w_dc},
+    {feature:'NDVI dryness',    imp:w_ndvi||0.01},
+    {feature:'Slope terrain',   imp:w_slope||0.01},
+  ].sort((a,b)=>b.imp-a.imp).slice(0,7);
+
+  const rl=score>=0.75?'EXTREME':score>=0.55?'HIGH':score>=0.35?'MEDIUM':'LOW';
+  const conf=Math.abs(score-.5)>=0.35?'HIGH':Math.abs(score-.5)>=0.15?'MEDIUM':'LOW';
+
+  const lines=[];
+  if(temp>35)         lines.push(`Extreme temperature (${temp}°C) — rapid fuel drying.`);
+  if(rh<20)           lines.push(`Critical humidity (${rh}%) — vegetation highly combustible.`);
+  if(ffmc>90)         lines.push(`FFMC at ${ffmc} — surface litter is extremely dry.`);
+  if(isi>12)          lines.push(`ISI of ${isi} — fire would spread very fast.`);
+  if(fwi>30)          lines.push(`FWI of ${fwi} — overall danger is severe.`);
+  if(wind>15)         lines.push(`Strong winds (${wind} km/h) will drive fire spread.`);
+  if(dry_days>14)     lines.push(`${dry_days} consecutive dry days — prolonged drought stress.`);
+  if(rain===0)        lines.push(`No recent rainfall — no moisture replenishment.`);
+  if(drought>3)       lines.push(`Drought index ${drought}/5 — deep soil moisture depleted.`);
+  if(ndvi&&ndvi<0.25) lines.push(`Low NDVI (${ndvi}) — vegetation severely stressed and dry.`);
+  if(slope>20)        lines.push(`Steep slope (${slope}°) accelerates uphill fire spread.`);
+  if(!lines.length)   lines.push('Conditions are within acceptable safe parameters.');
+
+  return{prob:score,rl,fire:score>=0.35?1:0,conf,factors,lines,
+    sum:`Fire probability: ${Math.round(score*100)}%. Risk classified as ${rl}. Threshold: 0.35.`};
+}
+
+function predict(){
+  const tval=document.getElementById('temp').value.trim();
+  const rval=document.getElementById('rh').value.trim();
+  const wval=document.getElementById('wind').value.trim();
+  document.getElementById('errbox').style.display='none';
+  document.getElementById('rbox').style.display='none';
+
+  if(!tval||!rval||!wval){
+    document.getElementById('errbox').textContent='Error: Temperature, Humidity and Wind speed are required.';
+    document.getElementById('errbox').style.display='block';
+    return;
+  }
+  const rh=parseFloat(rval);
+  if(rh<0||rh>100){
+    document.getElementById('errbox').textContent='Error: Humidity must be 0–100.';
+    document.getElementById('errbox').style.display='block';
+    return;
+  }
+
+  const btn=document.getElementById('pbtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span>Analysing all inputs…';
+
+  const inputs={
+    temp:g('temp'),rh:g('rh'),wind:g('wind'),wind_deg:g('wind_deg'),
+    rain:g('rain'),dewpoint:g('dewpoint'),
+    ffmc:g('ffmc'),dmc:g('dmc'),dc:g('dc'),isi:g('isi'),bui:g('bui'),fwi:g('fwi'),
+    ndvi:document.getElementById('ndvi').value?g('ndvi'):null,
+    landcover:s('landcover'),drought:g('drought'),dry_days:g('dry_days'),
+    slope:g('slope'),aspect:g('aspect'),elevation:g('elevation'),curvature:g('curvature'),
+    month:g('month')||new Date().getMonth()+1,
+    hour:g('hour')||new Date().getHours(),
+    doy:g('doy'),weekend:s('weekend'),
+  };
+
+  setTimeout(()=>{
+    const r=model(inputs);
+    render(r);
+    btn.disabled=false;
+    btn.textContent='Predict fire risk →';
+  },900);
+}
+
+function render(r){
+  const pct=Math.round(r.prob*100);
+  const maxI=Math.max(...r.factors.map(f=>f.imp),0.001);
+  const fcHTML=r.factors.map(f=>`
+    <div class="fr">
+      <div class="fn">${f.feature}</div>
+      <div class="ft"><div class="ff" style="width:${Math.round(f.imp/maxI*100)}%"></div></div>
+      <div class="fv">${f.imp.toFixed(3)}</div>
+    </div>`).join('');
+  const exHTML=r.lines.map(l=>`<p>— ${l}</p>`).join('');
+  const fcolor=r.rl==='LOW'?'var(--low)':r.rl==='MEDIUM'?'var(--med)':r.rl==='HIGH'?'var(--high)':'var(--ext)';
+
+  document.getElementById('rbox').innerHTML=`
+    <div class="rbanner ${r.rl}">
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:5px">RISK LEVEL</div>
+        <div class="rlbl ${r.rl}">${r.rl}</div>
+        <div class="rsub">${r.fire?'⚠ Fire predicted':'✓ Fire unlikely'} · confidence: ${r.conf}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="rpct">${pct}<sup>%</sup></div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:3px">threshold 0.35</div>
+      </div>
+    </div>
+    <div class="btrack"><div class="bfill ${r.rl}" id="bf" style="width:0%"></div></div>
+    <div class="blbls"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div class="stats">
+      <div class="sbox"><div class="sv">${pct}%</div><div class="sn">Probability</div></div>
+      <div class="sbox"><div class="sv" style="color:${r.fire?'var(--high)':'var(--low)'}">${r.fire?'YES':'NO'}</div><div class="sn">Predicted</div></div>
+      <div class="sbox"><div class="sv">${r.conf}</div><div class="sn">Confidence</div></div>
+      <div class="sbox"><div class="sv" style="color:${fcolor}">${r.rl}</div><div class="sn">Risk level</div></div>
+    </div>
+    <hr class="d">
+    <div class="flbl">Top contributing factors</div>
+    ${fcHTML}
+    <div class="expl">${exHTML}</div>
+    <div class="sum">${r.sum}</div>`;
+
+  document.getElementById('rbox').style.display='block';
+  setTimeout(()=>{document.getElementById('bf').style.width=pct+'%';},60);
+}
+</script>
